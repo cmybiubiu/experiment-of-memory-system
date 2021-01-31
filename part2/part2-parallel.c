@@ -22,7 +22,7 @@
 
 
 // Compute the historic average grade for a given course. Updates the average value in the record
-void compute_average(course_record *course)
+void *compute_average(course_record *course)
 {
 	assert(course != NULL);
 	assert(course->grades != NULL);
@@ -35,18 +35,35 @@ void compute_average(course_record *course)
 }
 
 // Compute the historic average grades for all the courses
-void compute_averages(course_record *courses, int courses_count)
-{
+void compute_averages(course_record *courses, int courses_count) {
 	assert(courses != NULL);
 
+	pthread_t thread_id[courses_count];
+	int i, ret;
+
+
 	for (int i = 0; i < courses_count; i++) {
-		compute_average(&(courses[i]));
+		//multi thread for each course
+
+		ret = pthread_create(&thread_id[i],NULL, compute_average, &(courses[i]) );//input: &id, Null,
+		if (ret != 0){
+			printf("create pthread error!\n");
+			exit(1);
+		}
+	}
+
+	for (int j =0; j < courses_count; j++){
+
+		rc = pthread_join(&thread_id[j], NULL);
+		if (rc != 0){
+			printf("pthread join error!\n");
+			exit(1);
+		}
 	}
 }
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	course_record *courses;
 	int courses_count;
 	// Load data from file; "part2data" is the default file path if not specified
