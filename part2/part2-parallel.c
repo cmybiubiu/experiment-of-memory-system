@@ -22,7 +22,7 @@
 
 
 // Compute the historic average grade for a given course. Updates the average value in the record
-void *compute_average(course_record *course) {
+void compute_average(course_record *course) {
 	assert(course != NULL);
 	assert(course->grades != NULL);
 
@@ -45,7 +45,7 @@ void compute_averages(course_record *courses, int courses_count) {
 	for (int i = 0; i < courses_count; i++) {
 		//multi thread for each course
 
-		ret = pthread_create(&thread_id[i],NULL, compute_average, (void *)&(courses[i]) );//input: &id, Null,
+		ret = pthread_create(&thread_id[i],NULL, (void *)compute_average, (void *)&(courses[i]) );//input: &id, Null,
 		if (ret != 0){
 			printf("create pthread error!\n");
 			return;
