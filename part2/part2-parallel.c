@@ -31,6 +31,7 @@ void *compute_average(course_record *course) {
 		course->average += course->grades[i].grade;
 	}
 	course->average /= course->grades_count;
+	pthread_exit(NULL);
 }
 
 // Compute the historic average grades for all the courses
