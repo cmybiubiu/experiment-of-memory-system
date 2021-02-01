@@ -12,5 +12,5 @@
 ./part2-parallel _data_0
 #./part2-parallel _data_1
 #./part2-parallel _data_2
-#./part2-parallel _data_3 
+./part2-parallel _data_3
 #
