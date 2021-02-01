@@ -22,25 +22,45 @@
 
 
 // Compute the historic average grade for a given course. Updates the average value in the record
-void compute_average(course_record *course)
-{
+void compute_average(course_record *course) {
 	assert(course != NULL);
 	assert(course->grades != NULL);
 
-	course->average = 0.0;
+	//course->average = 0.0;
+	double average = 0.0;
+	int course_count = course->grades_count;
 	for (int i = 0; i < course->grades_count; i++) {
-		course->average += course->grades[i].grade;
+		average += course->grades[i].grade;
 	}
-	course->average /= course->grades_count;
+	course->average = average/course_count;
+	pthread_exit(NULL);
 }
 
 // Compute the historic average grades for all the courses
-void compute_averages(course_record *courses, int courses_count)
-{
+void compute_averages(course_record *courses, int courses_count) {
 	assert(courses != NULL);
 
+	pthread_t thread_id[courses_count];
+	int ret, rc;
+
+
 	for (int i = 0; i < courses_count; i++) {
-		compute_average(&(courses[i]));
+		//multi thread for each course
+
+		ret = pthread_create(&thread_id[i],NULL, (void *)compute_average, (void *)&(courses[i]) );//input: &id, Null,
+		if (ret != 0){
+			printf("create pthread error!\n");
+			return;
+		}
+	}
+
+	for (int i =0; i < courses_count; i++){
+
+		rc = pthread_join(thread_id[i], NULL);
+		if (rc != 0){
+			printf("pthread join error!\n");
+			return;
+		}
 	}
 }
 
