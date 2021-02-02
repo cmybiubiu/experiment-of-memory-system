@@ -18,11 +18,24 @@
 #include "data.h"
 #include "time_util.h"
 
-int32_t threads;
+__int32_t threads;
 course_record *all_courses;
-int32_t chunk_size;
+__int32_t chunk_size;
+__int32_t courses_count;
 
 //TODO: parallelize the code and optimize performance
+void compute_average(int nth_course)
+{
+	assert(all_courses[nth_course] != NULL);
+	assert(all_courses[nth_course]->grades != NULL);
+	//course_record course = all_courses[nth_course];
+	double average = 0.0;
+	for (int i = 0; i < all_courses[nth_course].grades_count; i++) {
+		average += all_courses[nth_course].grades[i].grade;
+	}
+	all_courses[nth_course].average /= all_courses[nth_course].grades_count;
+
+}
 
 void compute_average_sharded(void *val){
 	int chunk_offset = (*(int*)val) *chunk_size;
@@ -31,18 +44,7 @@ void compute_average_sharded(void *val){
 	}
 }
 
-void compute_average(int nth_course)
-{
-	assert(all_courses[nth_course] != NULL);
-	assert(all_courses[nth_course]->grades != NULL);
 
-	all_courses[nth_course]->average = 0.0;
-	for (int i = 0; i < course->grades_count; i++) {
-		all_courses[nth_course]->average += all_courses[nth_course]->grades[i].grade;
-	}
-	all_courses[nth_course]->average /= all_courses[nth_course]->grades_count;
-
-}
 
 //void compute_average(course_record *course) {
 //	assert(course != NULL);
@@ -95,7 +97,7 @@ void compute_average(int nth_course)
 void compute_averages(course_record *courses, int courses_count) {
 	assert(courses != NULL);
 
-	int threads = ((int) courses_count/2 )+ (courses%2);
+	int threads = ((int) courses_count/2 )+ (courses_count%2);
 	pthread_t thread_id[threads];
 	int ret, rc;
 
@@ -124,11 +126,11 @@ void compute_averages(course_record *courses, int courses_count) {
 int main(int argc, char *argv[])
 {
 	//course_record *courses;
-	int courses_count;
-	threads = courses_count;
+	//int courses_count;
 	chunk_size = 2;
 	// Load data from file; "part2data" is the default file path if not specified
 	if (load_data((argc > 1) ? argv[1] : "part2data", &all_courses, &courses_count) < 0) return 1;
+	threads = courses_count;
 
 	struct timespec start, end;
 	clock_gettime(CLOCK_MONOTONIC, &start);
