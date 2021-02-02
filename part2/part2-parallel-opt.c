@@ -26,8 +26,6 @@ void compute_average(course_record *course) {
 	assert(course != NULL);
 	assert(course->grades != NULL);
 
-	//course_record *course_local = (course_record *)course;
-
 	double average = 0.0;
 	int course_count = course->grades_count;
 
@@ -47,11 +45,14 @@ void compute_averages(course_record *courses, int courses_count) {
 	pthread_t thread_id[courses_count];
 	int ret, rc;
 
+	printf("size of course_recored %fl \n", sizeof(course_record));
+	printf("size of grade_record %fl \n", sizeof(grade_record));
+
 
 	for (int i = 0; i < courses_count; i++) {
 		//multi thread for each course
 
-		ret = pthread_create(&thread_id[i],NULL, (void *)compute_average, (void *)&(courses[i]) );
+		ret = pthread_create(&thread_id[i],NULL, (void *)compute_average, (void *)&(courses[i]) );//input: &id, Null,
 		if (ret != 0){
 			printf("create pthread error!\n");
 			return;
