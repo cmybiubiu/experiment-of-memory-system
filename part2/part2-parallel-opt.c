@@ -26,11 +26,10 @@ void compute_average(course_record *course) {
 	assert(course != NULL);
 	assert(course->grades != NULL);
 
-	//course->average = 0.0;
 	double average = 0.0;
 	int course_count = course->grades_count;
 	grade_record *course_grades[course_count];
-	course_grades = malloc(sizeof(grade_record)*course_count);
+	printf("size of course grades %f", sizeof(grade_record));
 	course_grades = course->grades;
 	for (int i = 0; i < course->grades_count; i++) {
 		average += course_grades[i].grade;
