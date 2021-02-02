@@ -20,77 +20,59 @@
 
 //TODO: parallelize the code and optimize performance
 
-typedef struct _course_record {
-	char name[8];
-	grade_record *grades;// The grades of all the students that have taken this course
-	int grades_count;// Length of the 'grades' array
-	double average;// Historic average grade; must be (re)computed by this program
-	char Padding[32];
-} course_record;
+//typedef struct _course_record_opt {
+//	char name[8];
+//	grade_record *grades;// The grades of all the students that have taken this course
+//	int grades_count;// Length of the 'grades' array
+//	double average;// Historic average grade; must be (re)computed by this program
+//	char Padding[32];
+//} course_record_opt;
 
-//// Compute the historic average grade for a given course. Updates the average value in the record
-//void compute_average(course_record *course) {
-//	assert(course != NULL);
-//	assert(course->grades != NULL);
-//
-//	double average = 0.0;
-//	int course_count = course->grades_count;
-//
-//	grade_record *course_grades = course->grades;
-//
-//	for (int i = 0; i < course_count; i++) {
-//		average += (double) (course_grades[i].grade);
-//	}
-//	course->average = average/course_count;
-//	pthread_exit(NULL);
-//}
-
-void *compute_average(void *val)
-{
-	course_record *course = (course_record*)val;
-
+// Compute the historic average grade for a given course. Updates the average value in the record
+void compute_average(course_record *course) {
 	assert(course != NULL);
 	assert(course->grades != NULL);
 
-	int n = course->grades_count;
-	double avg = 0;
+	double average = 0.0;
+	int course_count = course->grades_count;
 
-	for (int i = 0; i < n; i++) {
-		avg += course->grades[i].grade;
+	grade_record *course_grades = course->grades;
+
+	for (int i = 0; i < course_count; i++) {
+		average += (double) (course_grades[i].grade);
 	}
-	course->average = avg / n;
+	course->average = average/course_count;
 	pthread_exit(NULL);
 }
 
+
+
 // Compute the historic average grades for all the courses
-void compute_averages(course_record *courses, int courses_count)
-{
+void compute_averages(course_record *courses, int courses_count) {
 	assert(courses != NULL);
-	pthread_t thread[courses_count];
-	pthread_attr_t attr;
-	int rc;
-	int t;
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-	void *status;
 
-	for( t=0; t<courses_count; t++){
-		rc = pthread_create(&thread[t], &attr, compute_average, (void *)&(courses[t]));
-		if (rc){
-			perror("ERROR; return code from pthread_create()\n");
-		}
-	}
+	pthread_t thread_id[courses_count];
+	int ret, rc;
 
-	pthread_attr_destroy(&attr);
-	for(t=0; t<courses_count; t++) {
-		rc = pthread_join(thread[t], &status);
-		if (rc) {
-			printf("ERROR; return code from pthread_join() is %d\n", rc);
+
+	for (int i = 0; i < courses_count; i++) {
+		//multi thread for each course
+
+		ret = pthread_create(&thread_id[i],NULL, (void *)compute_average, (void *)&(courses[i]) );//input: &id, Null,
+		if (ret != 0){
+			printf("create pthread error!\n");
 			return;
 		}
-
 	}
 
+	for (int i =0; i < courses_count; i++){
+
+		rc = pthread_join(thread_id[i], NULL);
+		if (rc != 0){
+			printf("pthread join error!\n");
+			return;
+		}
+	}
 }
 
 

@@ -34,6 +34,7 @@ void compute_average(course_record *course) {
 	pthread_exit(NULL);
 }
 
+
 // Compute the historic average grades for all the courses
 void compute_averages(course_record *courses, int courses_count) {
 	assert(courses != NULL);
