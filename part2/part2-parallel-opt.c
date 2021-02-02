@@ -45,8 +45,8 @@ void compute_averages(course_record *courses, int courses_count) {
 	pthread_t thread_id[courses_count];
 	int ret, rc;
 
-	printf("size of course_recored %fl \n", sizeof(course_record));
-	printf("size of grade_record %fl \n", sizeof(grade_record));
+	printf("size of course_recored %ld \n", sizeof(course_record));
+	printf("size of grade_record %ld \n", sizeof(grade_record));
 
 
 	for (int i = 0; i < courses_count; i++) {
