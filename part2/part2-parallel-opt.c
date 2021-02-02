@@ -19,19 +19,14 @@
 #include "time_util.h"
 
 //TODO: parallelize the code and optimize performance
-typedef struct _grade_record_opt {
-	int student;// Student ID
-	int grade;// Grade (0-100)
-} grade_record_opt;
-__declspec (align(64)) struct grade_record_opt;
 
-typedef struct _course_record_opt {
+typedef struct _course_record {
 	char name[8];
 	grade_record *grades;// The grades of all the students that have taken this course
 	int grades_count;// Length of the 'grades' array
 	double average;// Historic average grade; must be (re)computed by this program
-} course_record_opt;
-__declspec (align(64)) struct grade_record_opt;
+	char Padding[32];
+} course_record;
 
 //// Compute the historic average grade for a given course. Updates the average value in the record
 //void compute_average(course_record *course) {
