@@ -41,7 +41,8 @@ void compute_average_sharded(void *val){
 	int chunk_offset = (*(int*)val) *chunk_size;
 	for (int i = chunk_offset; i< chunk_size + chunk_offset && i < courses_count; i++ ){
 		//compute_average(i);
-		all_courses[i].average = i;
+		//all_courses[i].average = i;
+		printf("%d", i);
 		return;
 	}
 }
@@ -132,7 +133,6 @@ int main(int argc, char *argv[])
 	chunk_size = 2;
 	// Load data from file; "part2data" is the default file path if not specified
 	if (load_data((argc > 1) ? argv[1] : "part2data", &all_courses, &courses_count) < 0) return 1;
-	threads = courses_count;
 
 	struct timespec start, end;
 	clock_gettime(CLOCK_MONOTONIC, &start);
