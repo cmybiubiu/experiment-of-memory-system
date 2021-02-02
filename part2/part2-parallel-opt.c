@@ -42,7 +42,7 @@ void compute_average_sharded(void *val){
 	for (int i = chunk_offset; i< chunk_size + chunk_offset && i < courses_count; i++ ){
 		//compute_average(i);
 		//all_courses[i].average = i;
-		printf("%d", i);
+		printf("%d \n", i);
 		return;
 	}
 }
