@@ -106,7 +106,7 @@ void compute_averages(course_record *courses, int courses_count) {
 	for (int i = 0; i < threads; i++) {
 		//multi thread for each course
 
-		ret = pthread_create(&thread_id[i],NULL, (void *)compute_average, (void *)&(thread_id[i]) );//input: &id, Null,
+		ret = pthread_create(&thread_id[i],NULL, (void *)compute_average_sharded, (void *)&(thread_id[i]) );//input: &id, Null,
 		if (ret != 0){
 			printf("create pthread error!\n");
 			return;
