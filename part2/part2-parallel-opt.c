@@ -29,7 +29,9 @@ void compute_average(course_record *course) {
 	//course->average = 0.0;
 	double average = 0.0;
 	int course_count = course->grades_count;
-	grade_record course_grades[course_count];
+	grade_record *course_grades[course_count];
+	course_grades = malloc(sizeof(grade_record)*course_count);
+	course_grades = course->grades;
 	for (int i = 0; i < course->grades_count; i++) {
 		average += course_grades[i].grade;
 	}
