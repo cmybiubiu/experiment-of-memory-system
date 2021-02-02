@@ -41,7 +41,8 @@ void compute_average_sharded(void *val){
 	int chunk_offset = (*(int*)val) *chunk_size;
 	for (int i = chunk_offset; i< chunk_size + chunk_offset; i++ ){
 		//compute_average(i);
-		all_courses[i].average = i;
+		//all_courses[i].average = i;
+		return;
 	}
 }
 
