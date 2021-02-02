@@ -39,12 +39,13 @@ __int32_t courses_count;
 
 void compute_average_sharded(void *val){
 	int chunk_offset = (*(int*)val) *chunk_size;
-	for (int i = chunk_offset; i< chunk_size + chunk_offset && i < courses_count; i++ ){
-		//compute_average(i);
-		//all_courses[i].average = i;
-		printf("%d \n", i);
-		return;
-	}
+	printf("%d \n", chunk_offset);
+//	for (int i = chunk_offset; i< chunk_size + chunk_offset && i < courses_count; i++ ){
+//		//compute_average(i);
+//		//all_courses[i].average = i;
+//		printf("%d \n", i);
+//		return;
+//	}
 }
 
 
