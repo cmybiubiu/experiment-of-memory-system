@@ -24,23 +24,24 @@ __int32_t chunk_size;
 __int32_t courses_count;
 
 //TODO: parallelize the code and optimize performance
-void compute_average(int nth_course)
-{
-	assert(all_courses[nth_course] != NULL);
-	assert(all_courses[nth_course]->grades != NULL);
-	//course_record course = all_courses[nth_course];
-	double average = 0.0;
-	for (int i = 0; i < all_courses[nth_course].grades_count; i++) {
-		average += all_courses[nth_course].grades[i].grade;
-	}
-	all_courses[nth_course].average /= all_courses[nth_course].grades_count;
-
-}
+//void compute_average(int nth_course)
+//{
+//	assert(all_courses[nth_course] != NULL);
+//	assert(all_courses[nth_course]->grades != NULL);
+//	//course_record course = all_courses[nth_course];
+//	double average = 0.0;
+//	for (int i = 0; i < all_courses[nth_course].grades_count; i++) {
+//		average += all_courses[nth_course].grades[i].grade;
+//	}
+//	all_courses[nth_course].average /= all_courses[nth_course].grades_count;
+//
+//}
 
 void compute_average_sharded(void *val){
 	int chunk_offset = (*(int*)val) *chunk_size;
 	for (int i = chunk_offset; i< chunk_size + chunk_offset; i++ ){
-		compute_average(i);
+		//compute_average(i);
+		all_courses[i].average = i;
 	}
 }
 
