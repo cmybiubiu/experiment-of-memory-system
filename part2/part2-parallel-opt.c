@@ -36,7 +36,7 @@ void compute_average(course_record *course) {
 	printf("size of course grades %ld", sizeof(grade_record));
 
 	for (int i = 0; i < course->grades_count; i++) {
-		average += (double) (course_grades[i]->grade);
+		average += (double) (course_grades[i].grade);
 	}
 	course->average = average/course_count;
 	//free(course_grades);
