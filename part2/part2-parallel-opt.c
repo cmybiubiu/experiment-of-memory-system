@@ -143,6 +143,6 @@ int main(int argc, char *argv[])
 
 	printf("%f\n", timespec_to_msec(difftimespec(end, start)));
 
-	free_data(all_courses, all_courses);
+	free_data(all_courses, courses_count);
 	return 0;
 }
