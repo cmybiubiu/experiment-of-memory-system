@@ -39,9 +39,9 @@ __int32_t courses_count;
 
 void compute_average_sharded(void *val){
 	int chunk_offset = (*(int*)val) *chunk_size;
-	for (int i = chunk_offset; i< chunk_size + chunk_offset; i++ ){
+	for (int i = chunk_offset; i< chunk_size + chunk_offset && i < courses_count; i++ ){
 		//compute_average(i);
-		//all_courses[i].average = i;
+		all_courses[i].average = i;
 		return;
 	}
 }
@@ -114,7 +114,7 @@ void compute_averages(course_record *courses, int courses_count) {
 		}
 	}
 
-	for (int i =0; i < courses_count; i++){
+	for (int i =0; i < threads; i++){
 
 		rc = pthread_join(thread_id[i], NULL);
 		if (rc != 0){
