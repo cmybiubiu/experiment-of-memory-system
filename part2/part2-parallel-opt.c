@@ -73,14 +73,16 @@ void compute_averages(course_record *courses, int courses_count) {
 
 	//int threads = (int) courses_count/2 ;
 	int threads =1;
+
 	pthread_t thread_id[threads];
+	int idx[threads];
 	int ret, rc;
 
 	for (int i = 0; i < threads; i++) {
 		//multi thread for each course
-
-		ret = pthread_create(&thread_id[i],NULL, (void*)compute_average_sharded, (void*)&thread_id[i] );//input: &id, Null,
-		if (ret != 0){
+		idx[i] = i;
+		ret = pthread_create(&thread_id[i],NULL, (void*)compute_average_sharded, (void*)&idx[i] );//input: &id, Null,
+		if (ret){
 			printf("create pthread error!\n");
 			return;
 		}
@@ -89,7 +91,7 @@ void compute_averages(course_record *courses, int courses_count) {
 	for (int i =0; i < threads; i++){
 
 		rc = pthread_join(thread_id[i], NULL);
-		if (rc != 0){
+		if (rc){
 			printf("pthread join error!\n");
 			return;
 		}
