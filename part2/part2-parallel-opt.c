@@ -37,7 +37,7 @@ __int32_t courses_count;
 //
 //}
 
-void compute_average_sharded((void *) ith_thread){
+void compute_average_sharded(void * ith_thread){
 	int chunk_offset = (*(int*)ith_thread) *chunk_size;
 	printf("chunk offset: %d \n", chunk_offset);
 	for (int i = chunk_offset; i< chunk_size + chunk_offset; i++ ){
