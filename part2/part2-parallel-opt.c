@@ -37,14 +37,14 @@ __int32_t courses_count;
 //
 //}
 
-void compute_average_sharded(int ith_thread){
+void compute_average_sharded((void *) ith_thread){
 	int chunk_offset = (*(int*)ith_thread) *chunk_size;
-	printf("%d \n", chunk_offset);
+	printf("chunk offset: %d \n", chunk_offset);
 	for (int i = chunk_offset; i< chunk_size + chunk_offset; i++ ){
 		//compute_average(i);
 		//all_courses[i].average = i;
 
-		printf("%d \n", i);
+		printf("i: %d \n", i);
 		return;
 	}
 }
