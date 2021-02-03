@@ -29,11 +29,12 @@ void compute_average(int nth_course)
 	assert(all_courses[nth_course] != NULL);
 	assert(all_courses[nth_course]->grades != NULL);
 	//course_record course = all_courses[nth_course];
+	int grade_count = all_courses[nth_course].grades_count;
 	double average = 0.0;
-	for (int i = 0; i < all_courses[nth_course].grades_count; i++) {
+	for (int i = 0; i < grade_count; i++) {
 		average += all_courses[nth_course].grades[i].grade;
 	}
-	all_courses[nth_course].average /= all_courses[nth_course].grades_count;
+	all_courses[nth_course].average = average/grade_count;
 
 }
 
