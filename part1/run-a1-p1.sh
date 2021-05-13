@@ -8,6 +8,7 @@ module load gcc/7.3.0
 
 #Compile your code
 make clean
+rm -f *.txt
 rm -f *.out
 make
 

@@ -14,7 +14,7 @@
 CC = gcc
 CFLAGS += -std=gnu11 -Wall -Werror -g3 -O3 -DNDEBUG
 
-all: part1
+all: part1 
 
 part1: part1.o
 	$(CC) $^ -o $@
@@ -25,3 +25,6 @@ part1: part1.o
 
 clean:
 	rm -f *.o part1
+
+run: all 
+	python3 plot.py

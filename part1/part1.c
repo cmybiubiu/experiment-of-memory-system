@@ -19,173 +19,242 @@
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
-// #include <sys/sysinfo.h>
-#include "time_util.h"
+#include <sys/sysinfo.h>
 #include <math.h>
 
+#include "time_util.h"
 
-#define PARTB_TEST_TIMES (1024)
+#define PARTA_TEST_TIMES (50)
+#define PARTB_TEST_TIMES (500)
 
 #define KB (1024)
 #define MB (1024 * 1024)
-#define L2BATCH (1000)
-#define READ_TIMES 999999999
-#define TEST_RANGE 24
+#define GB (1024 * 1024 * 1024)
+
+static int sizes_a[] = { 1 * MB, 2 * MB, 4 * MB, 8 * MB, 16 * MB, 32 * MB, 64 * MB, 128 * MB, 256 * MB, 512 * MB, 1 * GB };
+static int sizes_b[] = { 4 * KB, 8 * KB, 16 * KB, 32 * KB, 64 * KB, 128 * KB, 256 * KB, 512 * KB, 1 * MB, 2 * MB, 4 * MB, 8 * MB, 16 * MB, 32 * MB, 64 * MB, 128 * MB };
+static int sizes_level[] = { 32 * KB, 256 * KB, 16 * MB, 128 * MB };
 
 
-
-static int sizes[] = { 1 * KB, 2 * KB, 4 * KB, 8 * KB, 12 * KB, 16 * KB, 24 * KB, 32 * KB, 64 * KB, 128 * KB, 256 * KB, 512 * KB, 1 * MB, 2 * MB, 4 * MB, 6 * MB, 8 * MB, 12 * MB, 16 * MB, 24 * MB, 32 * MB, 48 * MB, 64 * MB};
-
-int dump_output_to_file(double *output, char *filename) {
+/* Output data for part A */
+int dump_output_to_file_a(double *output, char *filename) {
 	FILE *f = fopen(filename, "w");
 	if (f == NULL) {
 		printf("could not open output file\n");
 		return -1;
 	}
-	for (int i = 0; i < sizeof(sizes) / sizeof(int); i++){
-		fprintf(f, "%d KB %fns \n", sizes[i]/KB, output[i]/1000);
+	for (int i = 0; i < sizeof(sizes_a)/sizeof(int); i++){
+		// Output format: MB, s, MB/s
+		int size_MB = sizes_a[i]/(1024 * 1024);
+		fprintf(f, "%d %f %f\n", size_MB, output[i] / (PARTA_TEST_TIMES * 1000000000.), size_MB * PARTA_TEST_TIMES * 1000000000. / output[i]);
 	}
 	fclose(f);
-
 	return 0;
 }
 
-long part_b() {
+
+/* An experiment to measure memory bandwidth */
+char part_a() {
 	struct timespec start;
 	struct timespec end;
 
-	// data[i] refers to the time spent on ramdomly access memory of size sizes[i]
-	double *data = malloc(sizeof(sizes) / sizeof(int) * sizeof(double));
-	long p = 0;
+	// data[i] refers to the time spent on writing to a block memory of size sizes_a[i]
+	double *data = malloc(sizeof(sizes_a) / sizeof(int) * sizeof(double));
+	// initialize data
+	for (int i = 0; i < sizeof(sizes_a) / sizeof(int); i ++) {
+		data[i] = 0;
+	}
 
-	for (int t = 0; t < 1000; t++){ //run experiment for 1000 times
-		// Perform test on each size
-		for (int i = 0; i < sizeof(sizes)/sizeof(int); i ++) { // i<sizeof(tests)/sizeof(int) - 1 ??????
-			int size = sizes[i];
-			long num_of_int = size / sizeof(int);  // tests[i]/sizeof(int) - 1;??????????
-			int* buffer = malloc(size);
-			// fill the buffer with some dummy numbers
-			for (long k = 0; k < num_of_int; k ++) {
-				buffer[k] = 3231;
-			}
+	// A block of memory
+	char* buffer = malloc(1 * GB);
+	memset(buffer, 'Z', 1 * GB);
 
-			// A list of random indices
-			int ramdom_index[PARTB_TEST_TIMES];
-			for (int j = 0; j < PARTB_TEST_TIMES; j ++) {
-				ramdom_index[j] = (rand() % 1024) * (size / 1024);
-			}
-
-			// Perform 'write' to random locations PARTB_TEST_TIMES times and time this operation
+	// Run tests PARTA_TEST_TIMES times
+	for(int t = 0; t < PARTA_TEST_TIMES; t ++) {
+		// Run test for each size in sizes a
+		for (int i = 0; i < sizeof(sizes_a) / sizeof(int); i ++) {
+			char c = 'A' + i;
 			clock_gettime(CLOCK_MONOTONIC, &start);
-			for (int t = 0; t < PARTB_TEST_TIMES; t++) {
-				buffer[ramdom_index[t]] = ramdom_index[t] +1 ;
-			}
-
+			// write to a block memory
+			memset(buffer, c, sizes_a[i]);
 			clock_gettime(CLOCK_MONOTONIC, &end);
-			// Time spent on ramdomly access memory of size
-			data[i] += timespec_to_nsec(difftimespec(end, start))/PARTB_TEST_TIMES;
+			data[i] += timespec_to_nsec(difftimespec(end, start));
 
-			for (long k = 0; k < num_of_int; k ++) {
-				p += buffer[k];
-			}
-
-//        printf("\n");
-//            printf("%dth time, start_sec: %ld, end: %ld \n", i, start.tv_sec, end.tv_sec);
-//            printf("%dth time, start_nsec: %ld, end: %ld \n", i, start.tv_nsec, end.tv_nsec);
-
-			// Clean up
-			free(buffer);
+			// Reset the buffer
+			memset(buffer, 'Z', 1 * GB);
+			// To go around compiler optimization
+			char random_letter = 'A' + (random() % 26);
+			buffer[i] = random_letter;
 		}
 	}
-	dump_output_to_file(data, "data3.txt");
+	// To go around compiler optimization
+	char p = 'p';
+	for (int i = 0; i < 40 * MB; i ++) {
+		p = buffer[i];
+	}
 
+	dump_output_to_file_a(data, "data_a.txt");
+	
+	// Clean up
+	free(buffer);
+	free(data);
 	return p;
 }
 
-int part_b_method2(double **data2, int times) {
-	struct timespec start;
-	struct timespec end;
-	clockid_t clock = CLOCK_MONOTONIC;
-	long p = 0;
 
-	*data2 = malloc(sizeof(sizes) / sizeof(int)* sizeof(double));
-
-	int *mem1 ;
-	long back = 64 * MB / sizeof(int);
-	for(int k = 0;k< sizeof(sizes) / sizeof(int) ; k++){
-		(*data2)[k] = 0;
+/* Output data for part B: levels */
+int dump_output_to_file_b(double *output, char *filename) {
+	FILE *f = fopen(filename, "w");
+	if (f == NULL) {
+		printf("could not open output file\n");
+		return -1;
 	}
-	mem1 = malloc (back*sizeof(int));
-	for(long k = 0;k<back;k++){
-		mem1[k] = 3231;
+	for (int i = 0; i < sizeof(sizes_b)/sizeof(int); i++){
+		// Output units: KB ns
+		fprintf(f, "%d %f\n", sizes_b[i]/1024, output[i] / PARTB_TEST_TIMES);
 	}
-
-
-	for( int t = 0;t < times ;t++){
-
-		for ( int i = 0;i<sizeof(sizes)/sizeof(int) ;i++){
-
-			long n = sizes[i]/sizeof(int) - 1;
-			clock_gettime(clock, &start);
-			for (int j = 0;j<50000;j++){
-				mem1[((j*256)&n)] = j+1;
-
-			}
-			clock_gettime(clock, &end);
-			(*data2)[i] += timespec_to_nsec(difftimespec(end, start))/(50000);
-			p += mem1[i];
-		}
-	}
-
-//	for(long j = 0;j<back;j++){
-//		p += mem1[j];
-//	}
-	dump_output_to_file(*data2, "data2.txt");
-
-	return p;
-
-
+	fclose(f);
+	return 0;
 }
 
-long partb_method3(double **data, int times){
+
+/* An experiment to determine the number of levels in the CPU cache hierarchy, and to measure cache
+ * sizes for each level, as well as the main memory.
+ */
+long part_b_levels() {
 	struct timespec start;
 	struct timespec end;
-	clockid_t clock = CLOCK_MONOTONIC;
 
-	*data = malloc(sizeof(sizes) / sizeof(int)* sizeof(double));
-
-	int *mem1 ;
-	long back = 64 * MB / sizeof(int);
-	for(int k = 0;k< sizeof(sizes) / sizeof(int) ; k++){
-		(*data)[k] = 0;
-	}
-	mem1 = malloc (back*sizeof(int));
-	for(long k = 0;k<back;k++){
-		mem1[k] = 3231;
+	// data[i] refers to the time spent on ramdomly accessed memory of size sizes_b[i]
+	double *data = malloc(sizeof(sizes_b) / sizeof(int) * sizeof(double));
+	// initialize data
+	for (int i = 0; i < sizeof(sizes_b) / sizeof(int); i ++) {
+		data[i] = 0;
 	}
 
+	// Allocate a buffer of 128 MB
+	int* buffer = malloc(128 * MB);
+	// fill the buffer with some dummy numbers
+	for (long k = 0; k < (128 * MB) / sizeof(int); k ++) {
+		buffer[k] = 123;
+	}
 
-	for( int t = 0;t < times ;t++){
-
-		for ( int i = 0;i<sizeof(sizes)/sizeof(int) - 1;i++){
-
-			long n = sizes[i]/sizeof(int) - 1;
-			clock_gettime(clock, &start);
-			for (int j = 0;j<50000;j++){
-				mem1[((j*256)&n)] = j+1;
-
+	// Perform test on each size in the sizes_b array
+	for (long s = 0; s < sizeof(sizes_b) / sizeof(int); s ++) {
+		// Each test runs PARTB_TEST_TIMES times
+		for (int t = 0; t < PARTB_TEST_TIMES; t ++) {
+			// Binary representation of num_of_int: 10000..., binary representation of num_of_int: 11111...
+			long num_of_int = sizes_b[s] / sizeof(int) - 1;
+			//Perform 'write' to discontinues locations and time this operation
+			if (sizes_b[s] < 1 * MB) {
+				clock_gettime(CLOCK_MONOTONIC, &start);
+				for (int j = 0; j < 50000; j ++){
+					// Stride is 128
+					buffer[(j * 128) & num_of_int] = j;
+				}
+				clock_gettime(CLOCK_MONOTONIC, &end);
+				data[s] += timespec_to_nsec(difftimespec(end, start)) / 50000;
+			} else {
+				clock_gettime(CLOCK_MONOTONIC, &start);
+				for (int j = 0; j < 100000; j ++){
+					// Stride is 512
+					buffer[(j * 512) & num_of_int] = j;
+				}
+				clock_gettime(CLOCK_MONOTONIC, &end);
+				data[s] += timespec_to_nsec(difftimespec(end, start)) / 100000;
 			}
-			clock_gettime(clock, &end);
-			(*data)[i] += timespec_to_nsec(difftimespec(end, start))/(50000);
 		}
 	}
-
-	dump_output_to_file(*data, "data.txt");
-
+	dump_output_to_file_b(data, "data_b.txt");
+	// Go around compiler optimization
 	long p = 0;
-	for(long j = 0;j<back;j++){
-		p += mem1[j];
+	for (long k = 0; k < (128 * MB) / sizeof(int); k ++) {
+		p = buffer[k];
 	}
+	// Clean up
+	free(buffer);
+	free(data);
+	return p;
+}
+
+/* Output data for part B: latency */
+int dump_output_to_file_b_latency(double *output, char *filename) {
+	FILE *f = fopen(filename, "w");
+	if (f == NULL) {
+		printf("could not open output file\n");
+		return -1;
+	}
+	for (int i = 0; i < sizeof(sizes_level)/sizeof(int); i++){
+		// Output units: KB ns
+		fprintf(f, "%d %f\n", sizes_level[i]/1024, output[i] / PARTB_TEST_TIMES);
+	}
+	fclose(f);
+	return 0;
+}
+
+
+/* An experiment to determine the cache (write) latencies for each level, as well as the
+ * write latency of main memory.
+ */
+char part_b_latency() {
+	struct timespec start;
+	struct timespec end;
+
+	// data[i] refers to the time spent on ramdomly accessed memory of size sizes_level[i]
+	double *data = malloc(sizeof(sizes_level) / sizeof(int) * sizeof(double));
+	// initialize data
+	for (int i = 0; i < sizeof(sizes_level) / sizeof(int); i ++) {
+		data[i] = 0;
+	}
+
+	// Allocate a buffer of 128 MB
+	char* buffer = malloc(128 * MB);
+	// Initialize the buffer
+	memset(buffer, 'Z', 128 * MB);
+
+	// Perform test on each size in the sizes_level array
+	for (long s = 0; s < sizeof(sizes_level) / sizeof(int); s ++) {
+		// Binary representation of size: 10000...
+		int size = sizes_level[s];
+		// Binary representation of mod: 11111...
+		int mod = sizes_level[s] - 1;
+		// Each test runs PARTB_TEST_TIMES times
+		for (int t = 0; t < PARTB_TEST_TIMES; t ++) {
+			//Perform 'write' to discontinues locations and time this operation
+			if (size < 1 * MB) {
+				clock_gettime(CLOCK_MONOTONIC, &start);
+				for (int j = 0; j < 10000; j ++){
+					// Stride is 128
+					buffer[(j * 128) & mod] = 'A';
+				}
+				clock_gettime(CLOCK_MONOTONIC, &end);
+				data[s] += timespec_to_nsec(difftimespec(end, start)) / 10000;
+			} else {
+				clock_gettime(CLOCK_MONOTONIC, &start);
+				for (int j = 0; j < 200000; j ++){
+					// Stride is 512
+					buffer[(j * 512) & mod] = 'B';
+				}
+				clock_gettime(CLOCK_MONOTONIC, &end);
+				data[s] += timespec_to_nsec(difftimespec(end, start)) / 200000;
+			}
+
+			// Reset the buffer
+			memset(buffer, 'Z', 128 * MB);
+			// Go around compiler optimization
+			char random_letter = 'A' + (random() % 26);
+			buffer[t] = random_letter;
+		}
+	}
+	dump_output_to_file_b_latency(data, "data_b_latency.txt");
+	// Go around compiler optimization
+	char p = 'p';
+	for (int i = 0; i < 40 * MB; i ++) {
+		p = buffer[i];
+	}
+	// Clean up
+	free(buffer);
+	free(data);
 	return p;
 }
 
@@ -193,14 +262,9 @@ long partb_method3(double **data, int times){
 
 int main(int argc, char *argv[])
 {
-	// Pin the thread to a single CPU to minimize effects of scheduling
-	// Don't use CPU #0 if possible, it tends to be busier with servicing interrupts
+	part_a();
+	part_b_levels();
+	part_b_latency();
 
-	double *data;
-//	double *data2;
-	partb_method3(&data, L2BATCH);
-	//part_b_method2(&data2, L2BATCH);
-	part_b();
-	free(data);
-	//free(data2);
+	return 0;
 }

@@ -24,13 +24,14 @@ __int32_t chunk_size;
 __int32_t courses_count;
 
 //TODO: parallelize the code and optimize performance
+// Compute the historic average grade for a given course. Updates the average value in the record
 void compute_average(int nth_course)
 {
-	assert(all_courses[nth_course] != NULL);
-	assert(all_courses[nth_course]->grades != NULL);
-	//course_record course = all_courses[nth_course];
+	assert(&all_courses[nth_course] != NULL);
+	assert(all_courses[nth_course].grades != NULL);
 	int grade_count = all_courses[nth_course].grades_count;
 	double average = 0.0;
+
 	for (int i = 0; i < grade_count; i++) {
 		average += all_courses[nth_course].grades[i].grade;
 	}
@@ -38,33 +39,14 @@ void compute_average(int nth_course)
 
 }
 
+//Parallel sharded implementation of calculation of average
 void compute_average_sharded(void * ith_thread){
 	int chunk_offset = (*(int*)ith_thread) *chunk_size;
-	//printf("chunk offset: %d \n", chunk_offset);
 
-	for (int i = chunk_offset; i< chunk_offset+chunk_size; i++ ){
+	for (int i = chunk_offset; i<chunk_offset+chunk_size && i<courses_count; i++ ){
 		compute_average(i);
-		printf("i: %d \n", i);
 	}
 }
-
-
-// Compute the historic average grade for a given course. Updates the average value in the record
-//void compute_average(course_record *course) {
-//	assert(course != NULL);
-//	assert(course->grades != NULL);
-//
-//	double average = 0.0;
-//	int course_count = course->grades_count;
-//
-//	//grade_record *course_grades = course->grades;
-//	for (int i = 0; i < course_count; i++) {
-//		average += course->grades[i].grade;
-//	}
-//	course->average = average/course_count;
-//	pthread_exit(NULL);
-//}
-
 
 // Compute the historic average grades for all the courses
 void compute_averages(course_record *courses, int courses_count) {
@@ -77,9 +59,9 @@ void compute_averages(course_record *courses, int courses_count) {
 	int ret, rc;
 
 	for (int i = 0; i < threads; i++) {
-		//multi thread for each course
+		//assign 2 courses's calculation to 1 thread
 		idx[i] = i;
-		ret = pthread_create(&thread_id[i],NULL, (void*)compute_average_sharded, (void*)&idx[i] );//input: &id, Null,
+		ret = pthread_create(&thread_id[i],NULL, (void*)compute_average_sharded, (void*)&idx[i] );
 		if (ret){
 			printf("create pthread error!\n");
 			return;
@@ -99,8 +81,6 @@ void compute_averages(course_record *courses, int courses_count) {
 
 int main(int argc, char *argv[])
 {
-	//course_record *courses;
-	//int courses_count;
 	chunk_size = 2;
 	// Load data from file; "part2data" is the default file path if not specified
 	if (load_data((argc > 1) ? argv[1] : "part2data", &all_courses, &courses_count) < 0) return 1;

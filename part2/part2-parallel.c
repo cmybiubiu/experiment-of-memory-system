@@ -34,7 +34,6 @@ void compute_average(course_record *course) {
 	pthread_exit(NULL);
 }
 
-
 // Compute the historic average grades for all the courses
 void compute_averages(course_record *courses, int courses_count) {
 	assert(courses != NULL);
@@ -42,11 +41,9 @@ void compute_averages(course_record *courses, int courses_count) {
 	pthread_t thread_id[courses_count];
 	int ret, rc;
 
-
 	for (int i = 0; i < courses_count; i++) {
-		//multi thread for each course
-
-		ret = pthread_create(&thread_id[i],NULL, (void *)compute_average, (void *)&(courses[i]) );//input: &id, Null,
+		//assign 1 course's calculation to 1 thread
+		ret = pthread_create(&thread_id[i],NULL, (void *)compute_average, (void *)&(courses[i]));
 		if (ret != 0){
 			printf("create pthread error!\n");
 			return;
@@ -54,7 +51,6 @@ void compute_averages(course_record *courses, int courses_count) {
 	}
 
 	for (int i =0; i < courses_count; i++){
-
 		rc = pthread_join(thread_id[i], NULL);
 		if (rc != 0){
 			printf("pthread join error!\n");
